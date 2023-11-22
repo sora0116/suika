@@ -1,29 +1,50 @@
-// aliases
-const Engine = Matter.Engine,
-	Render = Matter.Render,
-	World = Matter.World,
-	Constraint = Matter.Constraint,
-	Body = Matter.Body,
-	Bodies = Matter.Bodies,
-	Composite = Matter.Composite
+const WIDTH = 500
+const HEIGHT = 800
 
-const engine = Engine.create()
-const render = Render.create({
-	element: document.body,
-	engine: engine,
-})
+const { Engine, Render, Runner, Bodies, Composite } = Matter;
 
-/* ここにコードを追加していく */
-const ball = Bodies.circle(100, 20, 50);
-Composite.add(engine.world, [ball]);
+class Game {
+	engine;
+	render;
+	runner;
+	constructor(container) {
+		this.engine = Engine.create();
+		this.render = Render.create({
+			element: container,
+			engine: this.engine,
+			options: {
+				width: WIDTH,
+				height: HEIGHT,
+				// wireframes: false
+			}
+		});
+		this.runner = Runner.create();
+		Render.run(this.render);
+		Runner.run(this.runner, this.engine);
+		container.addEventListener("click", this.addBall.bind(this));
+	}
 
-const floor = Bodies.rectangle(100, 300, 100, 10, {
-	isStatic: true,
-	label: "ground",
-	angle: 10
-});
-Composite.add(engine.world, [floor]);
+	addBall() {
+		const ball = Bodies.circle(WIDTH / 2, 20, 10);
+		Composite.add(this.engine.world, [ball]);
+	}
 
-Engine.run(engine)
-Render.run(render)
+	init() {
+		const floor = Bodies.rectangle(WIDTH / 2, HEIGHT - 15, WIDTH, 10, {
+			isStatic: true,
+		});
+		const lwall = Bodies.rectangle(5, HEIGHT / 2, 10, HEIGHT, {
+			isStatic: true
+		})
+		const rwall = Bodies.rectangle(WIDTH - 5, HEIGHT / 2, 10, HEIGHT, {
+			isStatic: true
+		})
+		Composite.add(this.engine.world, [floor, lwall, rwall]);
+	}
+}
 
+window.onload = () => {
+	const container = document.querySelector(".container");
+	const game = new Game(container);
+	game.init();
+}
